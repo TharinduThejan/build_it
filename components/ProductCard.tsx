@@ -9,7 +9,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 alt={product.name}
                 width={300}
                 height={200}
-                className="w-full h-48 object-cover mb-4 rounded"
+                className="w-full h-48 object-cover mb-4 rounded-lg hover:scale-105 transition-transform duration-300"
             />
             <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
             <p className="text-gray-600">Rs. {product.price}</p>
