@@ -7,8 +7,13 @@ export default function Header() {
 
                 {/* Logo Section */}
                 <Link href="/" className="flex items-center gap-2 group">
-                    <div className="bg-blue-600 p-2 rounded-lg group-hover:bg-blue-500 transition-colors">
-                        <span className="text-xl font-black">lg</span>
+                    <div className="bg-slate-50 p-2 rounded-lg group-hover:bg-blue-500 transition-colors">
+                        <img
+                            src="/logo2.png"
+                            alt="BuildIt Logo"
+                            className="w-8 h-8 object-contain"
+                        />
+                        {/* <span className="text-xl font-black"></span> */}
                     </div>
                     <h1 className="text-2xl font-extrabold tracking-tight">
                         Build<span className="text-blue-500">It</span>

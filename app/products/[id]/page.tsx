@@ -54,7 +54,7 @@ export default function ProductDetails({
                             <span className="mx-2 text-slate-300">/</span>
                             <span className="text-blue-600">{product.category}</span>
                         </nav>
-                        <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter">
+                        <h1 className="text-4xl mt-5 md:text-6xl font-black text-slate-900 tracking-tighter">
                             {product.name}
                         </h1>
                     </div>
@@ -63,10 +63,9 @@ export default function ProductDetails({
                         <p className="text-4xl font-black text-blue-600">Rs. {product.price.toLocaleString()}</p>
                     </div>
                 </div>
-
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
                     {/* Hero Image Card */}
-                    <div className="lg:col-span-7 group relative">
+                    <div className="lg:col-span-7 group relative height-100">
                         <div className="absolute inset-0 bg-gradient-to-tr from-blue-50 to-transparent rounded-[3rem] -z-10" />
                         <div className="bg-white/40 backdrop-blur-sm rounded-[3rem] p-8 md:p-20 border border-slate-100 shadow-xl flex justify-center items-center overflow-hidden">
                             <Image
@@ -89,9 +88,9 @@ export default function ProductDetails({
                                 <div className="flex items-center justify-between bg-white p-2 rounded-2xl border border-slate-200">
                                     <span className="pl-4 font-bold text-slate-500 text-sm">Quantity</span>
                                     <div className="flex items-center bg-slate-100 rounded-xl overflow-hidden">
-                                        <button onClick={() => count > 1 && setCount(count - 1)} className="px-5 py-3 hover:bg-slate-200 transition-colors font-bold text-lg">-</button>
+                                        <button onClick={() => count > 1 && setCount(count - 1)} className="text-slate-500 px-5 py-3 hover:bg-slate-200 transition-colors font-bold text-lg">-</button>
                                         <span className="px-4 font-black w-12 text-center text-slate-900">{count}</span>
-                                        <button onClick={() => setCount(count + 1)} className="px-5 py-3 hover:bg-slate-200 transition-colors font-bold text-lg">+</button>
+                                        <button onClick={() => setCount(count + 1)} className="text-slate-500 px-5 py-3 hover:bg-slate-200 transition-colors font-bold text-lg">+</button>
                                     </div>
                                 </div>
 
@@ -104,9 +103,9 @@ export default function ProductDetails({
                                     <span>Rs. {(product.price * count).toLocaleString()}</span>
                                 </button>
 
-                                <button className="w-full bg-slate-900 hover:bg-black text-white font-bold py-5 rounded-2xl transition-all">
+                                {/* <button className="w-full bg-slate-900 hover:bg-black text-white font-bold py-5 rounded-2xl transition-all">
                                     Instant Buy
-                                </button>
+                                </button> */}
                             </div>
                         </div>
 
