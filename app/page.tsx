@@ -1,6 +1,12 @@
 import Link from "next/link";
+import { getProducts } from '@/lib/productapi';
+import ProductCard from '@/components/ProductCard';
+
+
 
 export default function Home() {
+  const products = getProducts();
+
   return (
     <section className="relative overflow-hidden bg-slate-900 py-24 sm:py-32">
       {/* Decorative Background Gradient */}
@@ -39,7 +45,11 @@ export default function Home() {
               Learn More
             </Link>
           </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+            {products.map((product: any) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
           {/* Trust Indicators */}
           <div className="mt-16 pt-8 border-t border-slate-800 flex flex-wrap justify-center gap-8 opacity-50 grayscale">
             <div className="flex items-center gap-2 text-white font-semibold italic text-xl">INTEL</div>

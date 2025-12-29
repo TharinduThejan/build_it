@@ -1,7 +1,13 @@
+"use client";
 import Link from "next/link";
-import { Product } from "../types/product"; // Assuming you have your interface here
+import { Product } from "../types/product";
+import { useCartStore } from "@/store/page";
+import { useState } from "react";
 
 export default function ProductCard({ product }: { product: Product }) {
+    const [count, setCount] = useState<number>(1);
+    const [isAdded, setIsAdded] = useState(false);
+    const addToCart = useCartStore((state) => state.addToCart);
     return (
         <div className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full">
             {/* Image Container */}
