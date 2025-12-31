@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function AdminDashboard() {
     return (
-        <div className="min-h-screen bg-slate-50/50 p-6 md:p-12 font-sans">
+        <div className="min-h-screen bg-slate-50 p-6 md:p-12 font-sans">
             {/* Header Section */}
             <header className="max-w-7xl mx-auto mb-12">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -52,7 +52,7 @@ export default function AdminDashboard() {
                     </Link>
 
                     {/* Placeholder Stat Card 1 */}
-                    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                    {/* <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -63,10 +63,10 @@ export default function AdminDashboard() {
                         </div>
                         <h3 className="text-slate-500 font-medium text-sm uppercase tracking-wider">Total Revenue</h3>
                         <p className="text-3xl font-black text-slate-900 mt-1">Rs. 124,500</p>
-                    </div>
+                    </div> */}
 
                     {/* Placeholder Stat Card 2 */}
-                    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                    {/* <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -77,7 +77,7 @@ export default function AdminDashboard() {
                         </div>
                         <h3 className="text-slate-500 font-medium text-sm uppercase tracking-wider">Active Orders</h3>
                         <p className="text-3xl font-black text-slate-900 mt-1">48</p>
-                    </div>
+                    </div> */}
 
                 </div>
             </main>
