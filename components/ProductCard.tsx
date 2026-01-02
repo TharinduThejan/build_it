@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import { Product } from "../types/product";
+import { getProducts } from "@/lib/productapi";
 import { useCartStore } from "@/store/page";
 import { useState } from "react";
+import type { Product } from "@/types/product";
 
 export default function ProductCard({ product }: { product: Product }) {
     const [count, setCount] = useState<number>(1);
@@ -13,7 +14,7 @@ export default function ProductCard({ product }: { product: Product }) {
             {/* Image Container */}
             <div className="relative aspect-square bg-slate-50 p-6 flex items-center justify-center overflow-hidden">
                 <Link
-                    href={`/products/${product.id}`}
+                    href={`/products/${product.productId}`}
                 >
                     <img
                         src={product.image}
