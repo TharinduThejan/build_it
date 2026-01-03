@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { getUsers, deleteUser } from '@/lib/userapi';
+import { getUsers } from '@/lib/userapi';
+import DeleteUserButton from '@/components/DeleteUserButton';
 
 export default async function UsersPage() {
     const users = await getUsers();
@@ -36,19 +37,14 @@ export default async function UsersPage() {
                             {/* <td className="border p-2">{user.userId}</td> */}
                             <td className="border p-2">{user.email}</td>
                             <td className="border p-2">{user.role}</td>
-                            <td className="border p-2">
+                            <td className="border p-2 flex items-center">
                                 <Link
                                     href={`/admin/users/edit/${user.userId}`}
                                     className="text-blue-600 mr-3"
                                 >
                                     Edit
                                 </Link>
-                                {/* <button
-                                    onClick={() => deleteUser(String(user.userId))}
-                                    className="text-red-600"
-                                >
-                                    Delete
-                                </button> */}
+                                <DeleteUserButton userId={user.userId} className="text-red-300 hover:cursor-pointer flex" />
                             </td>
                         </tr>
                     ))}
