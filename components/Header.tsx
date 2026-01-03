@@ -45,9 +45,9 @@ export default function Header() {
                         <span className="text-sm">🛒</span>
                         <span className="hidden sm:inline">Cart</span>
                         {/* Cart Count Badge */}
-                        <span className="absolute -top-1 -right-1 bg-blue-600 text-[10px] font-bold px-1.5 rounded-full">
+                        {/* <span className="absolute -top-1 -right-1 bg-blue-600 text-[10px] font-bold px-1.5 rounded-full">
                             3
-                        </span>
+                        </span> */}
                     </Link>
 
                     <button className="md:hidden text-2xl">
