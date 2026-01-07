@@ -1,8 +1,10 @@
-import { products } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
+import { getProducts } from "@/lib/productapi";
+import type { Product } from "@/types/product";
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
     const categories = ["All", "Laptop", "GPU", "Monitor", "Accessories", "Storage"];
+    const products: Product[] = await getProducts();
 
     return (
         <div className="bg-gray-50 min-h-screen">

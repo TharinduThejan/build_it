@@ -1,21 +1,34 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { products } from "@/data/products";
-import { use, useState } from "react";
+import { getProductById } from "@/lib/productapi";
+import { useState } from "react";
 import { useCartStore } from "@/store/page";
+import { useEffect } from "react";
 
-export default function ProductDetails({
-    params,
-}: {
-    params: Promise<{ id: string }>;
-}) {
+import { use } from "react";
+
+export default function ProductDetails({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const [count, setCount] = useState<number>(1);
     const [isAdded, setIsAdded] = useState(false);
-
+    const [product, setProduct] = useState<any | null>(null);
+    const [loading, setLoading] = useState(true);
     const addToCart = useCartStore((state) => state.addToCart);
-    const product = products.find((p) => p.id === Number(id));
+
+    useEffect(() => {
+        async function fetchProduct() {
+            setLoading(true);
+            const prod = await getProductById(id);
+            setProduct(prod);
+            setLoading(false);
+        }
+        if (id) fetchProduct();
+    }, [id]);
+
+    if (loading) {
+        return <div className="h-screen flex items-center justify-center text-xl text-slate-400">Loading...</div>;
+    }
 
     if (!product) {
         return (
@@ -60,7 +73,7 @@ export default function ProductDetails({
                     </div>
                     <div className="text-right">
                         <p className="text-sm font-bold text-slate-400 uppercase tracking-tighter">MSRP Retail</p>
-                        <p className="text-4xl font-black text-blue-600">Rs. {product.price.toLocaleString()}</p>
+                        <p className="text-4xl font-black text-blue-600">Rs. {typeof product.price === 'number' ? product.price.toLocaleString() : product.price}</p>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -71,8 +84,8 @@ export default function ProductDetails({
                             <Image
                                 src={product.image}
                                 alt={product.name}
-                                width={700}
-                                height={700}
+                                width={400}
+                                height={400}
                                 priority
                                 className="object-contain transition-transform duration-700 group-hover:scale-105 mix-blend-multiply"
                             />
