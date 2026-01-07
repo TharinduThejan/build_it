@@ -84,8 +84,8 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                             <Image
                                 src={product.image}
                                 alt={product.name}
-                                width={700}
-                                height={700}
+                                width={400}
+                                height={400}
                                 priority
                                 className="object-contain transition-transform duration-700 group-hover:scale-105 mix-blend-multiply"
                             />
