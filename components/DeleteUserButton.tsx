@@ -2,11 +2,10 @@
 
 import { useRouter } from "next/dist/client/components/navigation";
 import { useState } from "react";
-import { deleteUser } from '@/lib/userapi';
 
 type DeleteUserButtonProps = {
     userId: string | number;
-    className?: string; // Add this line
+    className?: string;
 };
 
 export default function DeleteUserButton({

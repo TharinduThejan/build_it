@@ -15,7 +15,7 @@ export default function EditUserPage() {
     const [updating, setUpdating] = useState(false);
 
     useEffect(() => {
-        if (!userId) return; // Guard if id is missing
+        if (!userId) return;
 
         async function loadUser() {
             setLoading(true);
