@@ -15,7 +15,7 @@ export default function RegisterPage() {
         setError("");
         setSuccess("");
         try {
-            const res = await fetch("/api/users", {
+            const res = await fetch("http://localhost:5000/users", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password, role }),
@@ -57,11 +57,12 @@ export default function RegisterPage() {
                 />
                 <select
                     value={role}
+
                     onChange={e => setRole(e.target.value)}
                     className="w-full p-3 mb-4 rounded bg-slate-700 text-white"
                 >
                     <option value="user">User</option>
-                    <option value="admin">Admin</option>
+                    {/* <option value="admin">Admin</option> */}
                 </select>
                 {error && <div className="text-red-500 mb-4">{error}</div>}
                 {success && <div className="text-green-500 mb-4">{success}</div>}
