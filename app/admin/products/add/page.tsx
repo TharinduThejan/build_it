@@ -1,17 +1,19 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
-const API_URL = "http://localhost:3000";
+const API_URL = "http://localhost:5000";
+
 
 export default function AddProductPage() {
     const router = useRouter();
+    const { data: session } = useSession();
     const [isSubmitting, setIsSubmitting] = useState(false);
-
     const [product, setProduct] = useState({
         name: "",
         price: "",
+        qty: "",
         image: "",
         description: "",
         category: "",
@@ -21,19 +23,31 @@ export default function AddProductPage() {
         e.preventDefault();
         setIsSubmitting(true);
 
+        // Get accessToken from session
+        const accessToken = session?.user?.accessToken;
+        if (!accessToken) {
+            alert("You must be logged in as an admin to add products.");
+            setIsSubmitting(false);
+            return;
+        }
+
         await fetch(`${API_URL}/products`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
                 ...product,
                 price: Number(product.price),
+                qty: Number(product.qty),
             }),
         });
 
         setIsSubmitting(false);
         router.push("/admin/products");
+        // Ensure the products list is refreshed after navigation
+        router.refresh?.();
     };
 
     return (
@@ -58,7 +72,7 @@ export default function AddProductPage() {
                 {/* Main Form Card */}
                 <form
                     onSubmit={handleSubmit}
-                    className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden"
+                    className="bg-white rounded-4xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden"
                 >
                     <div className="p-8 md:p-12 space-y-8">
 
@@ -92,6 +106,21 @@ export default function AddProductPage() {
                                         onChange={(e) => setProduct({ ...product, price: e.target.value })}
                                     />
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-800 mb-3">
+                                    Stock Quantity
+                                </label>
+                                <input
+                                    required
+                                    type="number"
+                                    min={0}
+                                    placeholder="0"
+                                    className="w-full px-6 py-4 rounded-2xl bg-slate-200 border-2 border-transparent focus:bg-white focus:border-slate-900 outline-none transition-all text-slate-800 font-bold"
+                                    value={product.qty}
+                                    onChange={(e) => setProduct({ ...product, qty: e.target.value })}
+                                />
                             </div>
 
                             <div>
@@ -143,7 +172,7 @@ export default function AddProductPage() {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full md:w-auto min-w-[200px] bg-slate-900 hover:bg-blue-600 disabled:bg-slate-300 text-white font-black text-xs uppercase tracking-[0.2em] py-5 px-10 rounded-2xl transition-all shadow-xl shadow-slate-200 active:scale-95"
+                            className="w-full md:w-auto min-w-50 bg-slate-900 hover:bg-blue-600 disabled:bg-slate-300 text-white font-black text-xs uppercase tracking-[0.2em] py-5 px-10 rounded-2xl transition-all shadow-xl shadow-slate-200 active:scale-95"
                         >
                             {isSubmitting ? "PROCESSING..." : "CREATE PRODUCT"}
                         </button>

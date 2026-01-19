@@ -1,26 +1,62 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 const API_URL = "http://localhost:5000";
 
-export default function EditProductPage({ params }: any) {
+import React from "react";
+
+export default function EditProductPage() {
     const router = useRouter();
-    const [product, setProduct] = useState<any>(null);
+    const params = useParams();
+    const id = params?.id as string | undefined;
+    const { data: session } = useSession();
+    interface Product {
+        productId: number;
+        _id?: string;
+        name: string;
+        price: number;
+        qty: number;
+        image: string;
+    }
+
+    const [product, setProduct] = useState<Product | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        fetch(`${API_URL}/products/${params.id}`)
+        if (!id) return;
+        fetch(`${API_URL}/products/${id}`)
             .then((res) => res.json())
-            .then(setProduct);
-    }, [params.id]);
+            .then((data) =>
+                setProduct({
+                    productId: Number(data.productId ?? id),
+                    _id: data._id,
+                    name: data.name ?? "",
+                    price: typeof data.price === "number" ? data.price : Number(data.price ?? 0),
+                    qty: typeof data.qty === "number" ? data.qty : Number(data.qty ?? 0),
+                    image: data.image ?? "",
+                })
+            );
+    }, [id]);
 
     const handleUpdate = async () => {
         setIsSaving(true);
-        await fetch(`${API_URL}/products/${params.id}`, {
+        const accessToken = session?.user?.accessToken;
+        if (!accessToken) {
+            alert("You must be logged in as an admin to update products.");
+            setIsSaving(false);
+            return;
+        }
+        if (!id) return;
+        await fetch(`${API_URL}/products/${id}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`,
+            },
             body: JSON.stringify(product),
         });
         setIsSaving(false);
@@ -31,11 +67,34 @@ export default function EditProductPage({ params }: any) {
         const confirmDelete = confirm("Are you sure you want to delete this product?");
         if (!confirmDelete) return;
 
-        await fetch(`${API_URL}/products/${params.id}`, {
+        const accessToken = session?.user?.accessToken;
+        if (!accessToken) {
+            alert("You must be logged in as an admin to delete products.");
+            return;
+        }
+
+        const productId = product?.productId;
+        if (!productId || Number.isNaN(productId)) {
+            alert("Missing product id.");
+            return;
+        }
+
+        const res = await fetch(`${API_URL}/products/${productId}`, {
             method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+            },
         });
 
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({}));
+            alert(error.message || "Failed to delete product.");
+            return;
+        }
+
         router.push("/admin/products");
+        router.refresh?.();
     };
 
     if (!product) {
@@ -85,9 +144,9 @@ export default function EditProductPage({ params }: any) {
                             <input
                                 type="text"
                                 className="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-slate-800 font-medium"
-                                placeholder="Enter product name"
-                                value={product.name}
+                                value={product.name ?? ""}
                                 onChange={(e) => setProduct({ ...product, name: e.target.value })}
+                                aria-label="Product name"
                             />
                         </div>
 
@@ -102,10 +161,26 @@ export default function EditProductPage({ params }: any) {
                                     <input
                                         type="number"
                                         className="w-full pl-10 pr-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-slate-800 font-medium"
-                                        value={product.price}
+                                        value={product.price ?? 0}
                                         onChange={(e) => setProduct({ ...product, price: Number(e.target.value) })}
+                                        title="Product price in USD"
+                                        aria-label="Product price"
                                     />
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-3">
+                                    Stock Quantity
+                                </label>
+                                <input
+                                    type="number"
+                                    min={0}
+                                    className="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-slate-800 font-medium"
+                                    value={product.qty ?? 0}
+                                    onChange={(e) => setProduct({ ...product, qty: Number(e.target.value) })}
+                                    aria-label="Stock quantity"
+                                />
                             </div>
 
                             {/* Image URL Field */}
@@ -116,9 +191,9 @@ export default function EditProductPage({ params }: any) {
                                 <input
                                     type="text"
                                     className="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-slate-800 font-medium"
-                                    placeholder="https://..."
-                                    value={product.image}
+                                    value={product.image ?? ""}
                                     onChange={(e) => setProduct({ ...product, image: e.target.value })}
+                                    aria-label="Product image URL"
                                 />
                             </div>
                         </div>
@@ -127,11 +202,12 @@ export default function EditProductPage({ params }: any) {
                         {product.image && (
                             <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200">
                                 <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Preview</p>
-                                <img
+                                <Image
                                     src={product.image}
                                     alt="Preview"
+                                    width={80}
+                                    height={80}
                                     className="h-20 w-20 object-cover rounded-lg border border-white shadow-sm"
-                                    onError={(e) => (e.currentTarget.style.display = 'none')}
                                 />
                             </div>
                         )}
@@ -142,7 +218,7 @@ export default function EditProductPage({ params }: any) {
                         <button
                             onClick={handleUpdate}
                             disabled={isSaving}
-                            className="relative flex items-center justify-center min-w-[160px] bg-slate-900 hover:bg-blue-600 disabled:bg-slate-400 text-white px-8 py-4 rounded-2xl font-bold transition-all active:scale-95 shadow-lg shadow-slate-200"
+                            className="relative flex items-center justify-center min-w-40 bg-slate-900 hover:bg-blue-600 disabled:bg-slate-400 text-white px-8 py-4 rounded-2xl font-bold transition-all active:scale-95 shadow-lg shadow-slate-200"
                         >
                             {isSaving ? (
                                 <div className="flex items-center gap-2">

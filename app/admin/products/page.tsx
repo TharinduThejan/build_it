@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { getProducts } from "@/lib/productapi";
+import type { Product } from "@/types/product";
 
 export default async function AdminProductsPage() {
-    const products = await getProducts();
+    const products: Product[] = await getProducts();
 
     return (
         <div className="min-h-screen bg-slate-50/50 p-6 md:p-10 font-sans">
@@ -30,13 +31,13 @@ export default async function AdminProductsPage() {
                 <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                     {/* Table Toolbar */}
                     <div className="p-6 border-b border-slate-100 bg-white flex items-center justify-between">
-                        <div className="relative w-full max-w-xs">
+                        {/* <div className="relative w-full max-w-xs">
                             <input
                                 type="text"
                                 placeholder="Filter by name..."
                                 className="w-full px-4 py-2 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 focus:bg-white transition-all"
                             />
-                        </div>
+                        </div> */}
                         <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                             {products.length} Items Total
                         </div>
@@ -53,14 +54,20 @@ export default async function AdminProductsPage() {
                             </thead>
 
                             <tbody className="divide-y divide-slate-50">
-                                {products.map((product: any) => (
-                                    <tr key={product._id} className="hover:bg-slate-50/50 transition-colors group">
+                                {products.map((product) => (
+                                    <tr key={product.productId ?? product._id} className="hover:bg-slate-50/50 transition-colors group">
                                         <td className="p-5">
                                             <div className="flex items-center gap-4">
                                                 {/* Thumbnail Placeholder */}
-                                                <div className="w-14 h-14 rounded-2xl bg-slate-100 flex-shrink-0 border border-slate-200 overflow-hidden relative">
+                                                <div className="w-14 h-14 rounded-2xl bg-slate-100 shrink-0 border border-slate-200 overflow-hidden relative">
                                                     {product.image ? (
-                                                        <img src={product.image} alt="" className="w-full h-full object-cover" />
+                                                        // eslint-disable-next-line @next/next/no-img-element
+                                                        <img
+                                                            src={product.image}
+                                                            alt={product.name}
+                                                            className="w-full h-full object-cover"
+                                                            loading="lazy"
+                                                        />
                                                     ) : (
                                                         <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-300">NO IMG</div>
                                                     )}
@@ -70,7 +77,7 @@ export default async function AdminProductsPage() {
                                                         {product.name}
                                                     </span>
                                                     <span className="text-xs font-mono text-slate-400 mt-1 block tracking-tighter">
-                                                        #{product._id.slice(-8).toUpperCase()}
+                                                        #{String(product.productId ?? "").padStart(4, "0")}
                                                     </span>
                                                 </div>
                                             </div>
@@ -82,7 +89,7 @@ export default async function AdminProductsPage() {
                                         </td>
                                         <td className="p-5 text-right">
                                             <Link
-                                                href={`/admin/products/edit/${product._id}`}
+                                                href={`/admin/products/edit/${product.productId}`}
                                                 className="inline-block text-xs font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 pb-0.5 transition-all"
                                             >
                                                 Edit Entry
