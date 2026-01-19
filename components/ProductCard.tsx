@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { getProducts } from "@/lib/productapi";
 import { useCartStore } from "@/store/page";
 import { useState } from "react";
 import type { Product } from "@/types/product";
@@ -43,7 +42,7 @@ export default function ProductCard({ product }: { product: Product }) {
                         Rs. {product.price.toLocaleString()}
                     </span>
                     <Link
-                        href={`/products/${product.id}`}
+                        href={`/products/${product.productId}`}
                         className="p-2 bg-slate-900 text-white rounded-xl hover:bg-blue-600 transition-colors"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -5,38 +5,45 @@ interface CartItem extends Product {
     quantity: number;
 }
 
+type AddToCartProduct = Product & { quantity?: number };
+
 interface CartState {
     cart: CartItem[];
-    addToCart: (product: Product) => void;
-    removeFromCart: (id: number) => void;
+    addToCart: (product: AddToCartProduct) => void;
+    removeFromCart: (productId: number) => void;
+    clearCart: () => void;
 }
 
 export const useCartStore = create<CartState>((set) => ({
     cart: [],
 
-    addToCart: (product: Product) =>
+    addToCart: (product: AddToCartProduct) =>
         set((state: CartState) => {
             const existing = state.cart.find(
-                (item: CartItem) => item.id === product.id
+                (item: CartItem) => item.productId === product.productId
             );
+
+            const quantity = product.quantity ?? 1;
 
             if (existing) {
                 return {
                     cart: state.cart.map((item: CartItem) =>
-                        item.id === product.id
-                            ? { ...item, quantity: item.quantity + 1 }
+                        item.productId === product.productId
+                            ? { ...item, quantity: item.quantity + quantity }
                             : item
                     ),
                 };
             }
 
             return {
-                cart: [...state.cart, { ...product, quantity: 1 }],
+                cart: [...state.cart, { ...product, quantity }],
             };
         }),
 
-    removeFromCart: (id: number) =>
+    removeFromCart: (productId: number) =>
         set((state: CartState) => ({
-            cart: state.cart.filter((item: CartItem) => item.id !== id),
+            cart: state.cart.filter((item: CartItem) => item.productId !== productId),
         })),
+
+    clearCart: () => set({ cart: [] }),
 }));
