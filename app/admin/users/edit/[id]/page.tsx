@@ -1,12 +1,14 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { getUserById, updateUser } from '@/lib/userapi';
 
 export default function EditUserPage() {
     const params = useParams();
     const userId = params.id;
     const router = useRouter();
+    const { data: session } = useSession();
 
     const [email, setEmail] = useState('');
     const [role, setRole] = useState('user');
@@ -22,7 +24,12 @@ export default function EditUserPage() {
             setError(null);
 
             try {
-                const user = await getUserById(userId);
+                const accessToken = session?.user?.accessToken;
+                if (!accessToken) {
+                    setError('You must be logged in as an admin to edit users.');
+                    return;
+                }
+                const user = await getUserById(userId, accessToken);
 
                 setEmail(user.email);
                 setRole(user.role);
@@ -47,7 +54,12 @@ export default function EditUserPage() {
         setError(null);
 
         try {
-            const res = await updateUser(userId, { email, role });
+            const accessToken = session?.user?.accessToken;
+            if (!accessToken) {
+                setError('You must be logged in as an admin to update users.');
+                return;
+            }
+            const res = await updateUser(userId, { email, role }, accessToken);
             if (!res.ok) throw new Error('Failed to update user');
             // Optionally, you can check the response body for errors here
             await res.json();
@@ -83,6 +95,7 @@ export default function EditUserPage() {
                 className="w-full p-2 border mb-3"
                 value={role}
                 onChange={e => setRole(e.target.value)}
+                aria-label="Role"
             >
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
