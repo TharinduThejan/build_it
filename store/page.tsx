@@ -1,42 +1,60 @@
+"use client";
+
 import { create } from "zustand";
-import { Product } from "@/types/product";
+import { createJSONStorage, persist } from "zustand/middleware";
+import type { Product } from "@/types/product";
 
 interface CartItem extends Product {
     quantity: number;
 }
 
+type AddToCartProduct = Product & { quantity?: number };
+
 interface CartState {
     cart: CartItem[];
-    addToCart: (product: Product) => void;
-    removeFromCart: (id: number) => void;
+    addToCart: (product: AddToCartProduct) => void;
+    removeFromCart: (productId: number) => void;
+    clearCart: () => void;
 }
 
-export const useCartStore = create<CartState>((set) => ({
-    cart: [],
+export const useCartStore = create<CartState>()(
+    persist(
+        (set) => ({
+            cart: [],
 
-    addToCart: (product: Product) =>
-        set((state: CartState) => {
-            const existing = state.cart.find(
-                (item: CartItem) => item.id === product.id
-            );
+            addToCart: (product: AddToCartProduct) =>
+                set((state: CartState) => {
+                    const existing = state.cart.find(
+                        (item: CartItem) => item.productId === product.productId
+                    );
 
-            if (existing) {
-                return {
-                    cart: state.cart.map((item: CartItem) =>
-                        item.id === product.id
-                            ? { ...item, quantity: item.quantity + 1 }
-                            : item
-                    ),
-                };
-            }
+                    const quantity = product.quantity ?? 1;
 
-            return {
-                cart: [...state.cart, { ...product, quantity: 1 }],
-            };
+                    if (existing) {
+                        return {
+                            cart: state.cart.map((item: CartItem) =>
+                                item.productId === product.productId
+                                    ? { ...item, quantity: item.quantity + quantity }
+                                    : item
+                            ),
+                        };
+                    }
+
+                    return {
+                        cart: [...state.cart, { ...product, quantity }],
+                    };
+                }),
+
+            removeFromCart: (productId: number) =>
+                set((state: CartState) => ({
+                    cart: state.cart.filter((item: CartItem) => item.productId !== productId),
+                })),
+
+            clearCart: () => set({ cart: [] }),
         }),
-
-    removeFromCart: (id: number) =>
-        set((state: CartState) => ({
-            cart: state.cart.filter((item: CartItem) => item.id !== id),
-        })),
-}));
+        {
+            name: "cart-store",
+            storage: createJSONStorage(() => localStorage),
+        }
+    )
+);

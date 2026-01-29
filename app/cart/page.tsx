@@ -5,7 +5,6 @@ import Link from "next/link";
 export default function CartPage() {
     const cart = useCartStore((state) => state.cart);
     const removeFromCart = useCartStore((state) => state.removeFromCart);
-
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     return (
@@ -24,7 +23,7 @@ export default function CartPage() {
                     <div className="space-y-4">
                         <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
                             {cart.map((item) => (
-                                <div key={item.id} className="flex flex-col sm:flex-row justify-between items-center py-6 border-b last:border-0 border-slate-50">
+                                <div key={item.productId} className="flex flex-col sm:flex-row justify-between items-center py-6 border-b last:border-0 border-slate-50">
                                     <div className="text-center sm:text-left">
                                         <h2 className="text-lg font-bold text-slate-900">{item.name}</h2>
                                         <p className="text-blue-600 font-medium text-sm">Qty: {item.quantity}</p>
@@ -33,7 +32,7 @@ export default function CartPage() {
                                     <div className="flex items-center gap-8 mt-4 sm:mt-0">
                                         <p className="font-bold text-slate-900">Rs. {(item.price * item.quantity).toLocaleString()}</p>
                                         <button
-                                            onClick={() => removeFromCart(item.id)}
+                                            onClick={() => removeFromCart(item.productId)}
                                             className="text-red-500 font-medium hover:text-red-700 transition-colors"
                                         >
                                             Remove
@@ -48,9 +47,12 @@ export default function CartPage() {
                                 <p className="text-slate-400 text-sm">Total Amount</p>
                                 <h2 className="text-3xl font-black">Rs. {total.toLocaleString()}</h2>
                             </div>
-                            <button className="bg-blue-600 hover:bg-blue-500 px-10 py-4 rounded-xl font-bold transition-all active:scale-95">
+                            <Link
+                                href="/checkout"
+                                className="bg-blue-600 hover:bg-blue-500 px-10 py-4 rounded-xl font-bold transition-all active:scale-95"
+                            >
                                 Checkout Now
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 )}

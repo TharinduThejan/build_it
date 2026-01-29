@@ -6,11 +6,14 @@ export default withAuth({
       if (req.nextUrl.pathname.startsWith("/admin")) {
         return token?.role === "admin";
       }
+      if (req.nextUrl.pathname.startsWith("/cart")) {
+        return token?.role === "user" || token?.role === "admin";
+      }
       return true;
     },
   },
 });
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/cart/:path*"],
 };

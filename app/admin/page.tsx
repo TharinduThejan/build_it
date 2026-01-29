@@ -81,6 +81,35 @@ export default function AdminDashboard() {
                         </div>
                     </Link>
 
+                    {/* Manage Orders Card */}
+                    <Link
+                        href="/admin/orders"
+                        className="group relative bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                    >
+                        {/* Decorative Background Element */}
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-50 rounded-full group-hover:scale-150 transition-transform duration-500" />
+
+                        <div className="relative">
+                            <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-200 group-hover:rotate-6 transition-transform">
+                                {/* Inline SVG Icon (Shopping Bag/Orders) */}
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                            </div>
+
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Manage Orders</h2>
+                            <p className="text-slate-500 leading-relaxed">
+                                Track, update, and manage customer orders and fulfillment status.
+                            </p>
+
+                            <div className="mt-6 flex items-center text-indigo-600 font-bold text-sm">
+                                View All Orders
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </div>
+                        </div>
+                    </Link>
                     {/* Placeholder Stat Card 1 */}
                     {/* <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
                         <div className="flex items-center justify-between mb-4">

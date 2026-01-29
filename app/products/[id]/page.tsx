@@ -1,139 +1,125 @@
 "use client";
+
+import { useParams } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
-import { getProductById } from "@/lib/productapi";
-import { useState } from "react";
+import { useProducts } from "@/actions/product.queryHooks";
 import { useCartStore } from "@/store/page";
-import { useEffect } from "react";
 
-import { use } from "react";
+export default function ProductDetailsPage() {
+    const { id } = useParams<{ id: string }>();
+    const { productQuery } = useProducts(undefined, id);
+    const { data: product, isLoading } = productQuery;
 
-export default function ProductDetails({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
-    const [count, setCount] = useState<number>(1);
-    const [isAdded, setIsAdded] = useState(false);
-    const [product, setProduct] = useState<any | null>(null);
-    const [loading, setLoading] = useState(true);
     const addToCart = useCartStore((state) => state.addToCart);
 
-    useEffect(() => {
-        async function fetchProduct() {
-            setLoading(true);
-            const prod = await getProductById(id);
-            setProduct(prod);
-            setLoading(false);
-        }
-        if (id) fetchProduct();
-    }, [id]);
-
-    if (loading) {
-        return <div className="h-screen flex items-center justify-center text-xl text-slate-400">Loading...</div>;
-    }
-
-    if (!product) {
+    if (isLoading) {
         return (
-            <div className="h-screen flex flex-col items-center justify-center space-y-4">
-                <div className="text-6xl">🔍</div>
-                <p className="text-xl font-semibold text-slate-400">Hardware not found</p>
-                <Link href="/products" className="text-blue-600 hover:underline">Return to Shop</Link>
+            <div className="flex items-center justify-center min-h-[60vh] bg-[#0a192f]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             </div>
         );
     }
 
-    const handleAddToCart = () => {
-        if (count > 0) {
-            addToCart({ ...product, quantity: count });
-            setIsAdded(true);
-            setTimeout(() => setIsAdded(false), 3000); // Reset toast after 3s
-        }
-    };
+    if (!product) {
+        return (
+            <div className="p-20 text-center bg-[#0a192f] min-h-screen">
+                <h2 className="text-3xl font-bold text-white">Product not found</h2>
+                <p className="text-gray-400 mt-4">The item you are looking for doesn&apos;t exist.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-white">
-            {/* Success Notification Toast */}
-            <div className={`fixed top-24 right-6 z-50 transform transition-all duration-500 ${isAdded ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0 pointer-events-none'}`}>
-                <div className="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700">
-                    <span className="bg-green-500 rounded-full p-1 text-[10px]">✓</span>
-                    <p className="text-sm font-bold">Added {count} item(s) to cart</p>
-                </div>
+            <div className="max-w-7xl mx-auto px-6 pt-10">
+                <nav className="text-sm font-medium text-gray-400 uppercase tracking-widest">
+                    Products / <span className="text-blue-500">{product.category || 'Hardware'}</span>
+                </nav>
             </div>
 
             <div className="max-w-7xl mx-auto px-6 py-12">
-                {/* Navigation & Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-                    <div>
-                        <nav className="flex mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">
-                            <Link href="/products" className="hover:text-blue-600 transition-colors">Catalog</Link>
-                            <span className="mx-2 text-slate-300">/</span>
-                            <span className="text-blue-600">{product.category}</span>
-                        </nav>
-                        <h1 className="text-4xl mt-5 md:text-6xl font-black text-slate-900 tracking-tighter">
-                            {product.name}
-                        </h1>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-sm font-bold text-slate-400 uppercase tracking-tighter">MSRP Retail</p>
-                        <p className="text-4xl font-black text-blue-600">Rs. {typeof product.price === 'number' ? product.price.toLocaleString() : product.price}</p>
-                    </div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                    {/* Hero Image Card */}
-                    <div className="lg:col-span-7 group relative height-100">
-                        <div className="absolute inset-0 bg-gradient-to-tr from-blue-50 to-transparent rounded-[3rem] -z-10" />
-                        <div className="bg-white/40 backdrop-blur-sm rounded-[3rem] p-8 md:p-20 border border-slate-100 shadow-xl flex justify-center items-center overflow-hidden">
-                            <Image
-                                src={product.image}
-                                alt={product.name}
-                                width={400}
-                                height={400}
-                                priority
-                                className="object-contain transition-transform duration-700 group-hover:scale-105 mix-blend-multiply"
-                            />
-                        </div>
-                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-                    {/* Controls & Specs */}
-                    <div className="lg:col-span-5 space-y-8">
-                        <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-200 shadow-sm">
-                            <h3 className="text-lg font-bold text-slate-900 mb-4">Configure Order</h3>
-
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center justify-between bg-white p-2 rounded-2xl border border-slate-200">
-                                    <span className="pl-4 font-bold text-slate-500 text-sm">Quantity</span>
-                                    <div className="flex items-center bg-slate-100 rounded-xl overflow-hidden">
-                                        <button onClick={() => count > 1 && setCount(count - 1)} className="text-slate-500 px-5 py-3 hover:bg-slate-200 transition-colors font-bold text-lg">-</button>
-                                        <span className="px-4 font-black w-12 text-center text-slate-900">{count}</span>
-                                        <button onClick={() => setCount(count + 1)} className="text-slate-500 px-5 py-3 hover:bg-slate-200 transition-colors font-bold text-lg">+</button>
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={handleAddToCart}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-blue-200 active:scale-95 flex justify-center items-center gap-3"
-                                >
-                                    <span>Add to Cart</span>
-                                    <span className="opacity-40">|</span>
-                                    <span>Rs. {(product.price * count).toLocaleString()}</span>
-                                </button>
-
-                                {/* <button className="w-full bg-slate-900 hover:bg-black text-white font-bold py-5 rounded-2xl transition-all">
-                                    Instant Buy
-                                </button> */}
+                    {/* Left: Product Image */}
+                    <div className="relative aspect-square bg-[#f8fafc] rounded-3xl overflow-hidden border border-gray-100 shadow-xl flex items-center justify-center p-8">
+                        <Image
+                            src={product.image}
+                            alt={product.name}
+                            width={800}
+                            height={800}
+                            className="object-contain w-full h-full transition-transform duration-700 hover:scale-110"
+                            priority
+                        />
+                        {product.qty <= 5 && product.qty > 0 && (
+                            <div className="absolute top-6 left-6 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                                Low Stock
                             </div>
+                        )}
+                    </div>
+
+                    {/* Right: Product Info */}
+                    <div className="space-y-8">
+                        <div>
+                            <h1 className="text-5xl font-black text-[#0a192f] tracking-tight leading-tight">
+                                {product.name}
+                            </h1>
+                            <div className="h-1.5 w-20 bg-blue-500 mt-4 rounded-full"></div>
                         </div>
 
-                        {/* Tech Specs Summary */}
+                        <div className="flex items-baseline gap-4">
+                            <span className="text-4xl font-bold text-gray-900">
+                                Rs. {product.price.toLocaleString()}
+                            </span>
+                            <span className={`text-sm font-bold px-3 py-1 rounded-lg ${product.qty > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+                                }`}>
+                                {product.qty > 0 ? 'AVAILABLE' : 'OUT OF STOCK'}
+                            </span>
+                        </div>
+
+                        <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Description</h3>
+                            <p className="text-gray-600 leading-relaxed">
+                                Experience the next level of performance with the {product.name}.
+                                Engineered for professionals, this hardware delivers the reliability
+                                and power required for modern high-performance computing tasks.
+                            </p>
+                        </div>
+
+                        {/* Specs Grid (Visual Polish) */}
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="p-5 rounded-3xl border border-slate-100 bg-white shadow-sm">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Availability</p>
-                                <p className="text-sm font-bold text-green-600 flex items-center gap-2">
-                                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> In Stock
-                                </p>
+                            <div className="border border-gray-100 p-4 rounded-xl">
+                                <p className="text-xs text-gray-400 uppercase">Condition</p>
+                                <p className="font-semibold text-gray-800">Brand New</p>
                             </div>
-                            <div className="p-5 rounded-3xl border border-slate-100 bg-white shadow-sm">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Warranty</p>
-                                <p className="text-sm font-bold text-slate-900">3 Year Limited</p>
+                            <div className="border border-gray-100 p-4 rounded-xl">
+                                <p className="text-xs text-gray-400 uppercase">Warranty</p>
+                                <p className="font-semibold text-gray-800">2 Years Local</p>
                             </div>
+                        </div>
+
+                        <div className="pt-6">
+                            <button
+                                className="group relative w-full flex items-center justify-center gap-3 px-8 py-5 bg-[#0a192f] hover:bg-blue-600 text-white font-bold rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-blue-200 disabled:bg-gray-300 disabled:cursor-not-allowed overflow-hidden"
+                                onClick={() =>
+                                    addToCart({
+                                        ...product,
+                                        productId: product.id,
+                                    })
+                                }
+                                disabled={product.qty <= 0}
+                            >
+                                <span className="relative z-10 uppercase tracking-wider">
+                                    {product.qty > 0 ? 'Add to Shopping Bag' : 'Currently Unavailable'}
+                                </span>
+                                {product.qty > 0 && (
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                )}
+                            </button>
+                            <p className="mt-6 text-sm text-gray-400 text-center">
+                                🛡️ Secure payment & official BuildIt warranty included.
+                            </p>
                         </div>
                     </div>
                 </div>

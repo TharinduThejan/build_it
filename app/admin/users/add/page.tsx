@@ -1,8 +1,12 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+
+const API_URL = "http://localhost:5000";
 
 export default function AddUserPage() {
+    const { data: session } = useSession();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("user");
@@ -15,9 +19,17 @@ export default function AddUserPage() {
         setError("");
         setSuccess("");
         try {
-            const res = await fetch("/api/users", {
+            const accessToken = session?.user?.accessToken;
+            if (!accessToken) {
+                setError("You must be logged in as an admin to add users.");
+                return;
+            }
+            const res = await fetch(`${API_URL}/users`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${accessToken}`,
+                },
                 body: JSON.stringify({ email, password, role }),
             });
             if (res.ok) {
@@ -56,6 +68,7 @@ export default function AddUserPage() {
                     value={role}
                     onChange={e => setRole(e.target.value)}
                     className="w-full p-3 mb-4 rounded bg-slate-700 text-white"
+                    aria-label="Role"
                 >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>

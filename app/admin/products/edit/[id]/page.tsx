@@ -1,158 +1,238 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
+import { useState } from "react";
+import type { ProductPayload } from "@/types/product";
+import type { Product } from "@/types/product";
+import {
+    useProducts
+} from "@/actions/product.queryHooks"
 
-const API_URL = "http://localhost:5000";
 
-export default function EditProductPage({ params }: any) {
-    const router = useRouter();
-    const [product, setProduct] = useState<any>(null);
-    const [isSaving, setIsSaving] = useState(false);
+export default function EditProductPage() {
+    const { id } = useParams<{ id: string }>();
+      const router = useRouter();
+    const { data: session } = useSession();
+    const accessToken = session?.user?.accessToken;
+ const {
+    productQuery,
+    updateProduct,
+    deleteProduct,
+  } = useProducts(accessToken, id);
 
-    useEffect(() => {
-        fetch(`${API_URL}/products/${params.id}`)
-            .then((res) => res.json())
-            .then(setProduct);
-    }, [params.id]);
-
-    const handleUpdate = async () => {
-        setIsSaving(true);
-        await fetch(`${API_URL}/products/${params.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(product),
-        });
-        setIsSaving(false);
-        router.push("/admin/products");
-    };
-
-    const handleDelete = async () => {
-        const confirmDelete = confirm("Are you sure you want to delete this product?");
-        if (!confirmDelete) return;
-
-        await fetch(`${API_URL}/products/${params.id}`, {
-            method: "DELETE",
-        });
-
-        router.push("/admin/products");
-    };
-
-    if (!product) {
+  const { data: product, isLoading } = productQuery;
+    if (isLoading || !product) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50">
-                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="font-medium text-slate-600 animate-pulse">Loading details...</p>
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="animate-pulse text-lg font-medium text-gray-500">Loading product details...</div>
+            </div>
+        );
+    }
+
+    if (!accessToken) {
+        return (
+            <div className="flex min-h-screen items-center justify-center p-4">
+                <div className="rounded-lg bg-red-50 p-6 text-center text-red-600 shadow-sm">
+                    <p className="font-semibold">Access Denied</p>
+                    <p className="text-sm">You must be logged in to edit products.</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl mx-auto">
-                {/* Header Section */}
-                <button
-                    onClick={() => router.back()}
-                    className="group flex items-center text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors mb-6"
-                >
-                    <span className="mr-2 transform group-hover:-translate-x-1 transition-transform">←</span>
-                    BACK TO PRODUCTS
-                </button>
+        <EditProductForm
+            product={product}
+            id={id}
+            accessToken={accessToken}
+             updateProduct={updateProduct}  
+             deleteProduct={deleteProduct}  
+        />
+    );
+}
 
-                <div className="flex items-end justify-between mb-8">
-                    <div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">
-                            Edit Product
-                        </h1>
-                        <p className="text-slate-500 font-medium">Modify item details and pricing</p>
-                    </div>
-                    <button
-                        onClick={handleDelete}
-                        className="px-5 py-2 text-xs font-bold uppercase tracking-widest text-red-500 border-2 border-red-100 hover:bg-red-50 hover:border-red-200 rounded-xl transition-all"
-                    >
-                        Delete Item
-                    </button>
+// const useDeleteProduct = (token?: string) => {
+//     const qc = useQueryClient();
+
+//     return useMutation({
+//         mutationFn: (id: string) => {
+//             if (!token) throw new Error("Missing access token");
+//             return deleteProductServer(id, token);
+//         },
+//         onSuccess: () => {
+//             qc.invalidateQueries({ queryKey: ["products"] });
+//         },
+//     });
+// };
+
+// const useUpdateProduct = (id: string, token?: string) => {
+//     const qc = useQueryClient();
+
+//     return useMutation({
+//         mutationFn: (product: ProductPayload) => {
+//             if (!token) throw new Error("Missing access token");
+//             return updateProductServer(id, product, token);
+//         },
+//         onSuccess: () => {
+//             qc.invalidateQueries({ queryKey: ["products"] });
+//             qc.invalidateQueries({ queryKey: ["product", id] });
+//         },
+//     });
+// };
+
+function EditProductForm({
+    product,
+    id,
+    accessToken,
+    updateProduct,
+    deleteProduct
+}: {
+    product: Product;
+    id: string;
+    accessToken: string;
+    deleteProduct: ReturnType<typeof useProducts>["deleteProduct"];
+    updateProduct: ReturnType<typeof useProducts>["updateProduct"];
+
+}) {
+    const router = useRouter();
+
+    const [form, setForm] = useState<ProductPayload>({
+        name: product.name,
+        price: product.price,
+        qty: product.qty ?? 0,
+        image: product.image,
+        category: product.category,
+        description: product.description,
+        productId: product.productId,
+    });
+
+    const handleUpdate = () => {
+        updateProduct.mutate(form, {
+            onSuccess: () => router.push("/admin/products"),
+        });
+    };
+
+    const handleDelete = () => {
+        if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
+        deleteProduct.mutate(id, {
+            onSuccess: () => router.push("/admin/products"),
+        });
+    };
+
+    const inputClasses = "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 outline-none";
+    const labelClasses = "block text-sm font-semibold text-gray-700 mb-1.5";
+
+    return (
+        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6">
+            <div className="mx-auto max-w-2xl rounded-xl bg-white p-8 shadow-sm border border-gray-100">
+                <div className="mb-8 border-b border-gray-100 pb-4">
+                    <h1 className="text-2xl font-bold text-gray-900">Edit Product</h1>
+                    <p className="text-sm text-gray-500">Update your product information and stock levels.</p>
                 </div>
 
-                {/* Main Card */}
-                <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden">
-                    <div className="p-8 space-y-8">
-                        {/* Name Field */}
+                <div className="space-y-6">
+                    <div>
+                        <label className={labelClasses}>Product Name</label>
+                        <input
+                            className={inputClasses}
+                            placeholder="e.g. Premium Wireless Headphones"
+                            value={form.name}
+                            onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <div>
-                            <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-3">
-                                Product Name
-                            </label>
+                            <label className={labelClasses}>Price ($)</label>
                             <input
-                                type="text"
-                                className="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-slate-800 font-medium"
-                                placeholder="Enter product name"
-                                value={product.name}
-                                onChange={(e) => setProduct({ ...product, name: e.target.value })}
+                                type="number"
+                                className={inputClasses}
+                                placeholder="0.00"
+                                value={form.price}
+                                onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Price Field */}
-                            <div>
-                                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-3">
-                                    Price (USD)
-                                </label>
-                                <div className="relative">
-                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                                    <input
-                                        type="number"
-                                        className="w-full pl-10 pr-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-slate-800 font-medium"
-                                        value={product.price}
-                                        onChange={(e) => setProduct({ ...product, price: Number(e.target.value) })}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Image URL Field */}
-                            <div>
-                                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-3">
-                                    Product Image URL
-                                </label>
-                                <input
-                                    type="text"
-                                    className="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-slate-800 font-medium"
-                                    placeholder="https://..."
-                                    value={product.image}
-                                    onChange={(e) => setProduct({ ...product, image: e.target.value })}
-                                />
-                            </div>
+                        <div>
+                            <label className={labelClasses}>Stock Quantity</label>
+                            <input
+                                type="number"
+                                className={inputClasses}
+                                placeholder="0"
+                                value={form.qty ?? 0}
+                                onChange={(e) => setForm({ ...form, qty: Number(e.target.value) })}
+                            />
                         </div>
-
-                        {/* Live Image Preview (Visual Bonus) */}
-                        {product.image && (
-                            <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Preview</p>
-                                <img
-                                    src={product.image}
-                                    alt="Preview"
-                                    className="h-20 w-20 object-cover rounded-lg border border-white shadow-sm"
-                                    onError={(e) => (e.currentTarget.style.display = 'none')}
-                                />
-                            </div>
-                        )}
                     </div>
 
-                    {/* Footer Actions */}
-                    <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex justify-end">
+                    <div>
+                        <label className={labelClasses}>Product Image URL</label>
+                        <input
+                            className={inputClasses}
+                            placeholder="https://example.com/image.jpg"
+                            value={form.image ?? ""}
+                            onChange={(e) => setForm({ ...form, image: e.target.value })}
+                        />
+                    </div>
+
+                    <div>
+                        <label className={labelClasses}>Category</label>
+                        <input
+                            className={inputClasses}
+                            placeholder="e.g. Accessories"
+                            value={form.category ?? ""}
+                            onChange={(e) => setForm({ ...form, category: e.target.value })}
+                        />
+                    </div>
+
+                    <div>
+                        <label className={labelClasses}>Description</label>
+                        <textarea
+                            className={`${inputClasses} min-h-[96px]`}
+                            placeholder="Short product description"
+                            value={form.description ?? ""}
+                            onChange={(e) => setForm({ ...form, description: e.target.value })}
+                        />
+                    </div>
+
+                    {form.image && (
+                        <div className="mt-2 rounded-lg border border-gray-200 p-2 inline-block">
+                            <div className="relative h-32 w-32 overflow-hidden rounded-md">
+                                <Image
+                                    src={form.image}
+                                    alt="Preview"
+                                    fill
+                                    className="object-cover"
+                                />
+                            </div>
+                            <p className="mt-1 text-center text-xs text-gray-400">Preview</p>
+                        </div>
+                    )}
+
+                    <div className="flex flex-col-reverse gap-3 pt-6 sm:flex-row sm:justify-between">
                         <button
-                            onClick={handleUpdate}
-                            disabled={isSaving}
-                            className="relative flex items-center justify-center min-w-[160px] bg-slate-900 hover:bg-blue-600 disabled:bg-slate-400 text-white px-8 py-4 rounded-2xl font-bold transition-all active:scale-95 shadow-lg shadow-slate-200"
+                            onClick={handleDelete}
+                            className="rounded-lg px-6 py-2.5 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
                         >
-                            {isSaving ? (
-                                <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    <span>Updating...</span>
-                                </div>
-                            ) : (
-                                "Save Changes"
-                            )}
+                            Delete Product
                         </button>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => router.push("/admin/products")}
+                                className="rounded-lg border border-gray-300 px-6 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleUpdate}
+                                className="rounded-lg bg-blue-600 px-8 py-2.5 text-sm font-semibold text-white transition-shadow hover:bg-blue-700 hover:shadow-lg active:scale-95"
+                            >
+                                Save Changes
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

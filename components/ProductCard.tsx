@@ -1,14 +1,9 @@
 "use client";
 import Link from "next/link";
-import { getProducts } from "@/lib/productapi";
-import { useCartStore } from "@/store/page";
-import { useState } from "react";
+import Image from "next/image";
 import type { Product } from "@/types/product";
 
 export default function ProductCard({ product }: { product: Product }) {
-    const [count, setCount] = useState<number>(1);
-    const [isAdded, setIsAdded] = useState(false);
-    const addToCart = useCartStore((state) => state.addToCart);
     return (
         <div className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full">
             {/* Image Container */}
@@ -16,9 +11,11 @@ export default function ProductCard({ product }: { product: Product }) {
                 <Link
                     href={`/products/${product.productId}`}
                 >
-                    <img
+                    <Image
                         src={product.image}
                         alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-500"
                     />
                 </Link>
@@ -43,7 +40,7 @@ export default function ProductCard({ product }: { product: Product }) {
                         Rs. {product.price.toLocaleString()}
                     </span>
                     <Link
-                        href={`/products/${product.id}`}
+                        href={`/products/${product.productId}`}
                         className="p-2 bg-slate-900 text-white rounded-xl hover:bg-blue-600 transition-colors"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

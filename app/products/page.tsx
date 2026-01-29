@@ -1,10 +1,10 @@
 import ProductCard from "@/components/ProductCard";
-import { getProducts } from "@/lib/productapi";
+import { getProductsServer } from "@/actions/productapi";
 import type { Product } from "@/types/product";
 
 export default async function ProductsPage() {
     const categories = ["All", "Laptop", "GPU", "Monitor", "Accessories", "Storage"];
-    const products: Product[] = await getProducts();
+    const products: Product[] = await getProductsServer();
 
     return (
         <div className="bg-gray-50 min-h-screen">
@@ -36,7 +36,7 @@ export default async function ProductsPage() {
 
             <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 p-6 md:p-12">
                 {/* Sidebar Filter */}
-                <aside className="w-full md:w-64 flex-shrink-0">
+                <aside className="w-full md:w-64 shrink-0">
                     <div className="sticky top-24 space-y-8">
                         <div>
                             <h3 className="text-sm font-bold uppercase tracking-widest text-slate-900 mb-4">
@@ -59,7 +59,7 @@ export default async function ProductsPage() {
                 <main className="flex-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                         {products.map((product) => (
-                            <ProductCard key={product.id} product={product} />
+                            <ProductCard key={product.productId} product={product} />
                         ))}
                     </div>
                 </main>
