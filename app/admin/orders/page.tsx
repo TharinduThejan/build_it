@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { getAllOrders, updateOrderStatus } from "@/lib/orderapi";
+import { getAllOrders, updateOrderStatus } from "@/actions/orderapi";
 import type { Order, OrderStatus } from "@/types/order";
 
 const STATUSES: OrderStatus[] = [
