@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { getUsers } from '@/lib/userapi';
+import { getUsers } from '@/actions/userapi';
 import DeleteUserButton from '@/components/DeleteUserButton';
 import type { User } from '@/types/user';
 
