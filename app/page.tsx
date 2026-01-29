@@ -1,28 +1,20 @@
 import Link from "next/link";
-import { getProducts } from '@/lib/productapi';
-import ProductCard from '@/components/ProductCard';
-
-
 
 export default async function Home() {
-  const products = await getProducts();
-
   return (
     <section className="relative overflow-hidden bg-slate-900 py-24 sm:py-32">
-      {/* Decorative Background Gradient */}
       <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 blur-3xl opacity-20">
-        <div className="aspect-[1000/600] w-[60rem] bg-gradient-to-tr from-blue-600 to-purple-500"></div>
+        <div className="aspect-1000/600 w-240 bg-linear-to-tr from-blue-600 to-purple-500"></div>
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
-          {/* Badge */}
           <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wider text-blue-400 uppercase bg-blue-400/10 rounded-full border border-blue-400/20">
             Next-Gen Hardware Now In Stock
           </span>
 
           <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight">
-            Elevate Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Digital Experience</span>
+            Elevate Your <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-cyan-300">Digital Experience</span>
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 mb-10 leading-relaxed">

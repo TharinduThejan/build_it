@@ -8,3 +8,13 @@ export interface Product {
   image: string;
   description?: string;
 }
+
+export type ProductPayload = {
+  name: string;
+  price: number;
+  qty: number;
+  category: string;
+  image: string;
+  description?: string;
+  productId?: number;
+};

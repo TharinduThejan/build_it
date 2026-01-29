@@ -1,183 +1,155 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 
-const API_URL = "http://localhost:5000";
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import type { ProductPayload } from "@/types/product";
+import { useProducts } from "@/actions/product.queryHooks";
+
 
 
 export default function AddProductPage() {
     const router = useRouter();
     const { data: session } = useSession();
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [product, setProduct] = useState({
+    const accessToken = session?.user?.accessToken;
+    const { addProduct } = useProducts(accessToken);
+
+    const [product, setProduct] = useState<ProductPayload>({
         name: "",
-        price: "",
-        qty: "",
+        price: 0,
+        qty: 0,
+        category: "",
         image: "",
         description: "",
-        category: "",
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
+
+    if (!accessToken) {
+        return (
+            <div className="min-h-[60vh] flex items-center justify-center p-6">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg shadow-sm max-w-md w-full text-center">
+                    <h1 className="text-xl font-bold mb-2">Access Denied</h1>
+                    <p>You must be logged in to add a product.</p>
+                </div>
+            </div>
+        );
+    }
+
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
-
-        // Get accessToken from session
-        const accessToken = session?.user?.accessToken;
-        if (!accessToken) {
-            alert("You must be logged in as an admin to add products.");
-            setIsSubmitting(false);
-            return;
-        }
-
-        await fetch(`${API_URL}/products`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({
-                ...product,
-                price: Number(product.price),
-                qty: Number(product.qty),
-            }),
+        addProduct.mutate(product, {
+            onSuccess: () => router.push("/admin/products"),
         });
-
-        setIsSubmitting(false);
-        router.push("/admin/products");
-        // Ensure the products list is refreshed after navigation
-        router.refresh?.();
     };
 
+    const inputStyles = "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white text-gray-900";
+    const labelStyles = "block text-sm font-semibold text-gray-700 mb-1";
+
     return (
-        <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
-            <div className="max-w-3xl mx-auto">
-                {/* Header */}
-                <div className="mb-10">
-                    <button
-                        onClick={() => router.back()}
-                        className="text-xs font-black tracking-[0.2em] text-red-800 hover:text-blue-600 transition-colors mb-4 block"
-                    >
-                        ← CANCEL AND RETURN
-                    </button>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">
-                        New Product Entry
-                    </h1>
-                    <p className="text-slate-800 font-medium mt-2">
-                        Fill in the details below to add a new item to your global catalog.
-                    </p>
-                </div>
+        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-xl mx-auto">
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-gray-900 px-8 py-6">
+                        <h1 className="text-2xl font-bold text-white">Create New Product</h1>
+                        <p className="text-gray-400 text-sm mt-1">Fill in the details to add to your inventory.</p>
+                    </div>
 
-                {/* Main Form Card */}
-                <form
-                    onSubmit={handleSubmit}
-                    className="bg-white rounded-4xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden"
-                >
-                    <div className="p-8 md:p-12 space-y-8">
-
-                        {/* Section: Basic Info */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="md:col-span-2">
-                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-800 mb-3">
-                                    Official Product Name
-                                </label>
-                                <input
-                                    required
-                                    placeholder="e.g. Minimalist Leather Watch"
-                                    className="w-full px-6 py-4 rounded-2xl bg-slate-200 border-2 border-transparent focus:bg-white focus:border-slate-900 outline-none transition-all text-slate-800 font-bold placeholder:text-slate-400 placeholder:font-normal"
-                                    value={product.name}
-                                    onChange={(e) => setProduct({ ...product, name: e.target.value })}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-800 mb-3">
-                                    Price (LKR)
-                                </label>
-                                <div className="relative">
-                                    <span className="absolute left-6 top-1/2 -translate-y-1/2 font-bold text-slate-800">Rs</span>
-                                    <input
-                                        required
-                                        type="number"
-                                        placeholder="0.00"
-                                        className="w-full pl-12 pr-6 py-4 rounded-2xl bg-slate-200 border-2 border-transparent focus:bg-white focus:border-slate-900 outline-none transition-all text-slate-800 font-bold"
-                                        value={product.price}
-                                        onChange={(e) => setProduct({ ...product, price: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-800 mb-3">
-                                    Stock Quantity
-                                </label>
-                                <input
-                                    required
-                                    type="number"
-                                    min={0}
-                                    placeholder="0"
-                                    className="w-full px-6 py-4 rounded-2xl bg-slate-200 border-2 border-transparent focus:bg-white focus:border-slate-900 outline-none transition-all text-slate-800 font-bold"
-                                    value={product.qty}
-                                    onChange={(e) => setProduct({ ...product, qty: e.target.value })}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-800 mb-3">
-                                    Category
-                                </label>
-                                <input
-                                    placeholder="e.g. Accessories"
-                                    className="w-full px-6 py-4 rounded-2xl bg-slate-200 border-2 border-transparent focus:bg-white focus:border-slate-900 outline-none transition-all text-slate-800 font-bold placeholder:text-slate-400 placeholder:font-normal"
-                                    value={product.category}
-                                    onChange={(e) => setProduct({ ...product, category: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Section: Assets & Media */}
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="p-8 space-y-5">
                         <div>
-                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-800 mb-3">
-                                Public Image URL
-                            </label>
+                            <label className={labelStyles}>Product Name</label>
                             <input
-                                placeholder="https://images.unsplash.com/..."
-                                className="w-full px-6 py-4 rounded-2xl bg-slate-200 border-2 border-transparent focus:bg-white focus:border-slate-900 outline-none transition-all text-slate-800 font-medium placeholder:text-slate-400"
-                                value={product.image}
-                                onChange={(e) => setProduct({ ...product, image: e.target.value })}
+                                placeholder="e.g. Wireless Headphones"
+                                className={inputStyles}
+                                value={product.name}
+                                onChange={(e) => setProduct({ ...product, name: e.target.value })}
+                                required
                             />
                         </div>
 
-                        {/* Section: Description */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className={labelStyles}>Price (Rs)</label>
+                                <input
+                                    type="number"
+                                    placeholder="0.00"
+                                    className={inputStyles}
+                                    value={product.price}
+                                    onChange={(e) => setProduct({ ...product, price: Number(e.target.value) })}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className={labelStyles}>Quantity</label>
+                                <input
+                                    type="number"
+                                    placeholder="10"
+                                    className={inputStyles}
+                                    value={product.qty}
+                                    onChange={(e) => setProduct({ ...product, qty: Number(e.target.value) })}
+                                    required
+                                />
+                            </div>
+                        </div>
+
                         <div>
-                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-800 mb-3">
-                                Product Description
-                            </label>
+                            <label className={labelStyles}>Category</label>
+                            <input
+                                placeholder="e.g. Accessories"
+                                className={inputStyles}
+                                value={product.category}
+                                onChange={(e) => setProduct({ ...product, category: e.target.value })}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className={labelStyles}>Image URL</label>
+                            <input
+                                placeholder="https://example.com/image.jpg"
+                                className={inputStyles}
+                                value={product.image}
+                                onChange={(e) => setProduct({ ...product, image: e.target.value })}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className={labelStyles}>Description</label>
                             <textarea
-                                rows={5}
-                                placeholder="Describe the key features and specifications..."
-                                className="w-full px-6 py-4 rounded-2xl bg-slate-200 border-2 border-transparent focus:bg-white focus:border-slate-900 outline-none transition-all text-slate-800 font-medium placeholder:text-slate-400"
+                                placeholder="Short product description"
+                                className={`${inputStyles} min-h-[96px]`}
                                 value={product.description}
                                 onChange={(e) => setProduct({ ...product, description: e.target.value })}
                             />
                         </div>
-                    </div>
 
-                    {/* Form Footer */}
-                    <div className="bg-slate-50 px-8 py-8 md:px-12 border-t border-slate-100 flex items-center justify-between">
-                        <p className="hidden md:block text-xs font-medium text-slate-800">
-                            Ensuring all fields are accurate helps SEO.
-                        </p>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full md:w-auto min-w-50 bg-slate-900 hover:bg-blue-600 disabled:bg-slate-300 text-white font-black text-xs uppercase tracking-[0.2em] py-5 px-10 rounded-2xl transition-all shadow-xl shadow-slate-200 active:scale-95"
-                        >
-                            {isSubmitting ? "PROCESSING..." : "CREATE PRODUCT"}
-                        </button>
-                    </div>
-                </form>
+                        <div className="pt-4">
+                            <button
+                                type="submit"
+                                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white transition-colors
+                  ${addProduct.isPending
+                                        ? "bg-gray-400 cursor-not-allowed"
+                                        : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
+                                    }`}
+                                disabled={addProduct.isPending}
+                            >
+                                {addProduct.isPending ? (
+                                    <span className="flex items-center">
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Processing...
+                                    </span>
+                                ) : (
+                                    "Create Product"
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );
